@@ -21,8 +21,9 @@ statusplot <- function(df)
   p <- ggplot(df, aes(xmin = as.Date(start),
                       xmax = as.Date(end),
                       ymin = which(df$flag==levels(df$flag)),
-                      ymax = which(df$flag==levels(df$flag)) - 0.9))
-  p + geom_rect(fill = "yellow") +
+                      ymax = which(df$flag==levels(df$flag)) - 0.9,
+                      fill = factor(flag)))
+  p + geom_rect() +
     scale_x_date(breaks = "1 month") +
     scale_y_continuous(breaks = seq(0.5, length(levels(df$name))-0.5, 1), labels = levels(df$name)) +
     theme(axis.text.x = element_text(angle = 90)) +
