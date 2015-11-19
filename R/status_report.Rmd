@@ -1,0 +1,133 @@
+---
+title: "`r params$projectid` Status Report"
+subtitle: "status_report.Rmd v 0.90.0"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 5
+    highlight: default
+fontsize: 10pt
+geometry: margin = 0.6in
+params:
+  projectid : not specified
+  subjectid: not specified
+  filename: not specified
+---
+
+
+```{r setup, include = F}
+# initial setup
+knitr::opts_chunk$set(cache       = F,
+                      fig.width   = 12,
+                      fig.height  = 5,
+                      warning     = F,
+                      message     = F,
+                      tidy        = F,
+                      prompt      = T,
+                      strip.white = T,
+                      comment     = NA)
+
+stopifnot(length(params$filename) > 0)
+stopifnot(length(params$projectid) > 0)
+stopifnot(length(params$subjectid) > 0)
+
+############################## EXAMPLE CALL ####################################
+# rmarkdown::render("status_report.Rmd",
+#  params=list(
+#    filename = dir(".", c(".csv"), recursive = T),
+#  output_file = paste("status_",
+#                      format(Sys.time(), '%Y%m%d'), ".pdf", sep="")
+# )
+############################## EXAMPLE CALL ####################################
+```
+
+\hfill 
+
+This report is intended to give a summary of analysis result of project 
+`r params$projectid`. The result can be reproduced using the identical data 
+files and identical version of rmarkdown file stated in the table below.  
+
+
+Name                        Value
+--------------------------  ----------------------
+.Rmd version                v 0.90.0
+Project name                `r params$projectid`
+Subject id                  `r params$subjectid`
+Data file                   `r params$filename`
+--------------------------  ----------------------
+
+\pagebreak
+
+### Status Plot
+
+Project process status plot.  
+  
+```{r plot1, echo = FALSE}
+df <- read.csv(filename)
+statusplot(df)
+
+```
+
+### Subject Summary
+
+In total `r length(params$subjectid` subjects' data files have been anaylzed in this project.  
+And the individual parameters are:
+```{r sum1, echo = FALSE}
+x <- table(df$var)
+knitr::kable(matrix(x, byrow=T, nrow=1), col.names=names(x))
+
+```
+
+
+### Boxplot and Histogram (Daily Variables)
+
+Statistical summary plots with dashed line representing location of mean.
+
+```{r plot2, echo=F}
+# Boxplot
+par(mar=c(3,1,1,1))
+p <- ggplot(df, aes(factor(var), var2))
+p + geom_boxplot() + 
+  geom_hline(aes(yintercept=mean(var2)), linetype="dashed", color="gray22", size=1) +
+  coord_cartesian(ylim=c(0, 24)) + 
+  scale_y_continuous(breaks=seq(0, 24, 6)) + 
+  xlab("Var1") + 
+  ylab("var2") + 
+  ggtitle("Boxplot of Daily Variable")
+
+par(mar=c(1,1,10,1))
+# Histogram
+p <- ggplot(df, aes(x=var2, fill=var))
+p + geom_bar() + 
+  geom_vline(aes(xintercept=mean(var2)), linetype="dashed", color="gray22", size=1)
+
+```
+
+
+\pagebreak
+
+
+### Time Series Plot  
+
+Time series plot, with smoothed conditional mean plotted (when samples < 1000, 
+use method of local polynomial regression fitting; otherwise, use method of 
+generalized additive models with integrated smoothness estimation) 
+
+```{r plot3, echo=F, fig.height=10}
+# Time Series Plot
+p <- ggplot(df, aes(var1, var2))
+p + geom_line(aes(color=factor(var1)), size=1) + 
+  geom_smooth(color="gray45", size=1, linetype="dashed") + 
+  facet_grid(var1  ~ .) + 
+  theme(legend.position="none") + 
+  coord_cartesian(ylim=c(0, 24)) + 
+  scale_y_continuous(breaks=seq(0, 24, 6)) + 
+  xlab("Time") + 
+  ylab("Variable") + 
+  ggtitle("Time Series Plot")
+
+```
+
+
+
