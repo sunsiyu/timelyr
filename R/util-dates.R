@@ -27,3 +27,30 @@ create_dates <- function(start, end, by, n,
   }
 }
 
+getyear <- function(date, long=TRUE)
+{
+  date <- as.Date(date)
+  if (long)
+    return(format(date, "%Y"))
+  else
+    return(format(date, "%y"))
+}
+
+getmonth<- function(date, abbr=F)
+{
+  date <- as.Date(date)
+  if (abbr)
+    return(format(date, "%b"))
+  else
+    return(format(date, "%m"))
+}
+
+getday <- function(date)
+{
+  date <- as.Date(date)
+  return(format(date, "%d"))
+}
+
+
+
+
