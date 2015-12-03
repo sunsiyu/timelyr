@@ -2,6 +2,7 @@
 
 export(compareplot)
 export(create_dates)
+export(create_times)
 export(getborders)
 export(getchunk)
 export(getfileext)
