@@ -17,15 +17,15 @@ getchunk <- function(df, max_gap = 600, min_len = 10)
 {
   stopifnot(is.data.frame(df))
 
-  if (!("time" %in% names(df) && inherits(df$time, "POSIXct"))) {
-    stop ("df must have a column named \"time\" and of class 'POSIXct'!")
-  }
-
   if (nrow(df) < 1) {
     return(list())
   }
 
-  borders <- getborders(df, max_gap, min_steps, ind_time = F)
+  if (!"time" %in% names(df)) {
+    stop ("df must have a column named \"time\" and of class 'POSIXct'!")
+  }
+
+  borders <- getborders(df, max_gap, min_len, ind_time = F)
 
   chunks <- lapply(seq(along = borders$start), function(i) {
     df[borders$start[i]:borders$end[i], , drop = FALSE]})
@@ -54,22 +54,28 @@ getchunk <- function(df, max_gap = 600, min_len = 10)
 getborders <- function(df, max_gap = 600, min_len = 10, ind_time = F)
 {
   stopifnot(is.data.frame(df))
-  if (!("time" %in% names(df) && inherits(df$time, "POSIXct"))) {
-    stop ("df must have a column named \"time\" and of class 'POSIXct'!")
-  }
-  stopifnot(is.numeric(max_gap) && is.numeric(min_len))
 
   if (nrow(df) < 1) {
     return(data.frame(start = numeric(), end = numeric()))
   }
 
+  if (!"time" %in% names(df)) {
+    stop ("df must have a column named \"time\" and of class 'POSIXct'!")
+  }
+
+  stopifnot(is.numeric(max_gap) && is.numeric(min_len))
+
+  if (!inherits(df$time, "POSIXct")) {
+    df$time <- as.POSIXct(df$time, tz = "UTC")
+  }
+
   # find chunks with gap smaller than max_gap
   tdiff <- c(0, difftime(df$time[-1], df$time[-nrow(df)], units = "secs"))
-  borders <- unique(c(1, which(tdiff > max_gap), nrow(df)))
+  borders <- unique(c(0, which(tdiff > max_gap), nrow(df)))
 
   # find chunks with length larger than min_len
-  start <- borders[which(diff(borders) > min_len)]
-  end <- borders[which(diff(borders) > min_len)+1]-1
+  start <- borders[which(diff(borders) > min_len)] + 1
+  end <- borders[which(diff(borders) > min_len) + 1]
 
   if (ind_time) {
     start <- df$time[start]

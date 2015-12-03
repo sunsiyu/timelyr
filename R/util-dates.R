@@ -27,6 +27,42 @@ create_dates <- function(start, end, by, n,
   }
 }
 
+
+#' Create times
+#'
+#' Create times with different methods
+#'
+#' @param start start time index
+#' @param end end time index
+#' @param by if method is sequence, seq() argument by
+#' @param n if method is random, vector of length n dates to create
+#' @param method partial matching methods to be used
+#' @return a vector of dates
+#' @examples
+#' t1 <- create_times("2015-01-01 00:00:00", "2015-01-01 23:59:59", by=1, n=10)
+#' @export
+create_times <- function(start, end, by, n, tz="UTC",
+                         method = c("sequence", "random")[1], ...)
+{
+  if (!inherits(start, "POSIXct")) {
+    start <- as.POSIXct(start, tz = tz)
+  }
+
+  if (!inherits(end, "POSIXct")) {
+    end <- as.POSIXct(end, tz = tz)
+  }
+
+  if (pmatch(method, c("sequence", "random")) == 1)
+    return (seq(start, end, by=by, ...))
+
+  if (pmatch(method, c("sequence", "random")) == 2) {
+    tmp <- sample(1:ceiling(difftime(end, start, "days")), n)
+    res <- start + tmp
+    res <- res[order(res)]
+    return (res)
+  }
+}
+
 getyear <- function(date, long=TRUE)
 {
   date <- as.Date(date)
