@@ -25,7 +25,7 @@ getfileext <- function(path) {
 #' statusplot(data.frame(name = c("name1", "name2", "name3"),
 #'  start = c("20150101", "20150201", "20150301"),
 #'  end = c("20150110", "20150220", "20150330"),
-#'  flag = c("good", "med", "bad")))
+#'  flag = c("good", "med", "bad"), stringsAsFactors = F))
 #' @export
 statusplot <- function(df)
 {
@@ -36,9 +36,9 @@ statusplot <- function(df)
     ymin = which(levels(df$name) == df$name)
   }
 
-  df$start <- as.Date(df$start, "%Y%m%d")
-  df$end <- as.Date(df$end, "%Y%m%d")
-  df$flag <- ordered(df$flag, levels=c("good", "med", "bad"))
+  df$start <- as.Date(as.character(df$start), "%Y%m%d")
+  df$end <- as.Date(as.character(df$end), "%Y%m%d")
+  df$flag <- ordered(as.character(df$flag), levels=c("good", "med", "bad"))
 
   p <- ggplot(df, aes(xmin = as.Date(start),
                       xmax = as.Date(end),
@@ -46,7 +46,6 @@ statusplot <- function(df)
                       ymax = ymin + 0.9,
                       fill = factor(flag)))
   p <- p + geom_rect() +
-    scale_x_date(breaks = "1 month") +
     scale_y_continuous(breaks = seq(1.5, length(levels(df$name))+0.5, 1), labels = levels(df$name)) +
     theme(axis.text.x = element_text(angle = 90)) +
     xlab("Date") +
